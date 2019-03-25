@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"errors"
@@ -8,22 +8,22 @@ import (
 )
 
 // A Polygon is a sequence of points (corners)
-// connected to their respective neighbours
+// connected to their respective neighbours.
 type Polygon struct {
 	Corners []*Corner
 	N       int
 }
 
 // A Corner is a part of a polygon that has two
-// neighbours and it's own poisition
+// neighbours and it's own poisition.
 type Corner struct {
 	Plygn *Polygon
-	Pos   Point
+	Pos   *Point
 	N1    *Corner
 	N2    *Corner
 }
 
-// NewPolygon returns an empty polygon
+// NewPolygon returns an empty polygon.
 func NewPolygon() *Polygon {
 	p := &Polygon{make([]*Corner, 0, 3), 0}
 	p.MakeClockwise()
@@ -32,7 +32,7 @@ func NewPolygon() *Polygon {
 }
 
 // NewPolygonFromArray takes an array of corners and
-// reshapes them so that they form a polygon
+// reshapes them so that they form a polygon.
 func NewPolygonFromArray(corners []*Corner) *Polygon {
 	p := &Polygon{corners, len(corners)}
 	for i := 0; i < len(corners); i++ {
@@ -46,10 +46,10 @@ func NewPolygonFromArray(corners []*Corner) *Polygon {
 
 // removeFlatCorners removes every corner of the polygon
 // that doesn't add to it's shape; that means every corner
-// that has an 180 degree angle
+// that has an 180 degree angle.
 func (P *Polygon) removeFlatCorners() {
 	for i, c := range P.Corners {
-		ls := NewLineSegment(c.N1.Pos, c.N2.Pos)
+		ls := NewLineSegment(*c.N1.Pos, *c.N2.Pos)
 		if ls.L.RelationOf(c.Pos) == 0 {
 			P.remove(i)
 		}
@@ -57,7 +57,7 @@ func (P *Polygon) removeFlatCorners() {
 }
 
 // remove removes a single corner given by the index
-// from a polygon
+// from a polygon.
 func (P *Polygon) remove(indx int) {
 	c := P.Corners[indx]
 	c.N1.N2 = c.N2
@@ -77,8 +77,8 @@ func (P *Polygon) remove(indx int) {
 
 // AddCorner adds a single corner to the polygon;
 // if you are adding more corners at once, please refer
-// to (*Polygon).AddCorners
-func (P *Polygon) AddCorner(p Point) *Polygon {
+// to (*Polygon).AddCorners.
+func (P *Polygon) AddCorner(p *Point) *Polygon {
 	if P.N > 0 {
 		newCorner := &Corner{P, p, P.Corners[P.N-1], P.Corners[0]}
 		P.Corners = append(P.Corners, newCorner)
@@ -93,7 +93,7 @@ func (P *Polygon) AddCorner(p Point) *Polygon {
 
 // AddCorners adds a slice of corners to
 // the polygon efficiently
-func (P *Polygon) AddCorners(Points []Point) *Polygon {
+func (P *Polygon) AddCorners(Points []*Point) *Polygon {
 	newN := P.N + len(Points)
 	newCorners := make([]*Corner, newN)
 	copy(newCorners[:P.N], P.Corners)
@@ -110,7 +110,9 @@ func (P *Polygon) AddCorners(Points []Point) *Polygon {
 	return P
 }
 
-func stoPlygn(s string) *Polygon {
+// SToPlygn converts a string of ints into a polygon as
+// implemented by Polygon.
+func SToPlygn(s string) *Polygon {
 	splitS := strings.Split(s, " ")
 	cnt := tools.Stoi(splitS[0])
 	corners := make([]*Corner, cnt)
@@ -157,9 +159,9 @@ func (P *Polygon) Reverse() {
 
 // GetBox returns the minimal rectangle that is alligned
 // to the axis that includes every point of the polygon
-func (P *Polygon) GetBox() (Point, Point) {
+func (P *Polygon) GetBox() (*Point, *Point) {
 	if P.N == 0 {
-		return Point{0, 0}, Point{0, 0}
+		return &Point{0, 0}, &Point{0, 0}
 	} else if P.N == 1 {
 		return P.Corners[0].Pos, P.Corners[0].Pos
 	} else {
@@ -185,14 +187,14 @@ func (P *Polygon) GetBox() (Point, Point) {
 
 // HullContains returns wether a given point p is inside the
 // convex hull of the polygon
-func (P *Polygon) HullContains(p Point) bool {
+func (P *Polygon) HullContains(p *Point) bool {
 	if P.N == 0 {
 		// If there are no corners, p can't be inside
 		return false
 	} else if P.N == 1 {
 		// if there is only one corner,
 		// p must equal that one
-		return p == P.Corners[0].Pos
+		return *p == *P.Corners[0].Pos
 	}
 	// if it's not inside the rectangle surrounding
 	// the polygon, it's not inside the polygon
@@ -205,7 +207,7 @@ func (P *Polygon) HullContains(p Point) bool {
 	// the intersections; a point inside the polygon
 	// intersects odd times
 	var intersections int
-	ln := NewLineSegment(p, NewPoint(max.X+1, p.Y))
+	ln := NewLineSegment(*p, *NewPoint(max.X+1, p.Y))
 	q := P.Corners[0]
 	// see below
 	for q.IsConcave() {
@@ -219,7 +221,7 @@ func (P *Polygon) HullContains(p Point) bool {
 			i++
 			nextQ = nextQ.N2
 		}
-		edge := NewLineSegment(q.Pos, nextQ.Pos)
+		edge := NewLineSegment(*q.Pos, *nextQ.Pos)
 		if intersection(ln, edge) < 0 {
 			intersections++
 		}
@@ -234,9 +236,10 @@ func (P *Polygon) DoesIntersect(ls *LineSegment) bool {
 	// For the following inspection to work we need to
 	// make sure that neither of the points is in the
 	// polygon
-	if P.contains(ls.A) || P.contains(ls.B) {
-		return true
-	}
+	// TODO: Find good conditioning to solve these easy cases early
+	//if P.contains(ls.A) || P.contains(ls.B) {
+	//	return true
+	//}
 	relations := make([]int, P.N)
 	for i := 0; i < P.N; i++ {
 		relations[i] = ls.L.RelationOf(P.Corners[i].Pos)
@@ -254,7 +257,7 @@ func (P *Polygon) DoesIntersect(ls *LineSegment) bool {
 	for i := 0; i < P.N; i++ {
 		j := (i + 1) % P.N
 		if relations[i]*relations[j] < 0 {
-			newLS := NewLineSegment(P.Corners[i].Pos, P.Corners[j].Pos)
+			newLS := NewLineSegment(*P.Corners[i].Pos, *P.Corners[j].Pos)
 			if newLS.L.RelationOf(ls.A)*newLS.L.RelationOf(ls.B) < 0 {
 				return true
 			}
@@ -268,10 +271,10 @@ func (P *Polygon) DoesIntersect(ls *LineSegment) bool {
 var ErrPointEnclosed = errors.New(
 	"The given Polygon is concave and the given point is within it's hull")
 
-// getShadow returns the corners of the polygon which
+// GetShadow returns the corners of the polygon which
 // would determine the shadow if there was a light
 // source at a given point; the points are ordered counter clockwise
-func (P *Polygon) getShadow(p Point) (*Corner, *Corner, error) {
+func (P *Polygon) GetShadow(p *Point) (*Corner, *Corner, error) {
 	if P.HullContains(p) {
 		return nil, nil, ErrPointEnclosed
 	}
@@ -296,7 +299,7 @@ func (P *Polygon) getShadow(p Point) (*Corner, *Corner, error) {
 	}
 	for _, c := range P.Corners {
 		if c.Pos != p {
-			ls := NewLineSegment(p, c.Pos).ScaleTo(maxSqDist)
+			ls := NewLineSegment(*p, *c.Pos).ScaleTo(maxSqDist)
 			if !P.DoesIntersect(ls) {
 				if found {
 					p2 = c
@@ -308,18 +311,18 @@ func (P *Polygon) getShadow(p Point) (*Corner, *Corner, error) {
 		}
 	}
 	// Getting angles to sort the points
-	angle1, err := getAngle(p, p1.Pos)
+	angle1, err := GetAngle(p, p1.Pos)
 	if err != nil {
 		panic(err)
 	}
-	angle2, err := getAngle(p, p2.Pos)
+	angle2, err := GetAngle(p, p2.Pos)
 	if err != nil {
 		panic(err)
 	}
 	// Getting a reference point to check
 	// which one of the points comes first in
 	// counter clockwise order
-	var refP Point
+	var refP *Point
 	for _, c := range P.Corners {
 		if c.Pos != p1.Pos && c.Pos != p2.Pos {
 			refP = c.Pos
@@ -327,7 +330,7 @@ func (P *Polygon) getShadow(p Point) (*Corner, *Corner, error) {
 		}
 	}
 	// Getting reference angle
-	refAngle, err := getAngle(p, refP)
+	refAngle, err := GetAngle(p, refP)
 	if err != nil {
 		refAngle = 0
 	}
@@ -340,14 +343,14 @@ func (P *Polygon) getShadow(p Point) (*Corner, *Corner, error) {
 	return p1, p2, nil
 }
 
-// getUnblockedSpikes returns every convex corner of
+// GetUnblockedSpikes returns every convex corner of
 // the polygon that can be connected to p with a straight
 // line without intersecting the edges of the polygon
-func (P *Polygon) getUnblockedSpikes(p Point) []Point {
-	res := make([]Point, 0)
+func (P *Polygon) GetUnblockedSpikes(p *Point) []*Point {
+	res := make([]*Point, 0)
 	for _, c := range P.Corners {
 		if !c.IsConcave() {
-			if !P.DoesIntersect(NewLineSegment(p, c.Pos)) {
+			if !P.DoesIntersect(NewLineSegment(*p, *c.Pos)) {
 				res = append(res, c.Pos)
 			}
 		}
@@ -357,7 +360,7 @@ func (P *Polygon) getUnblockedSpikes(p Point) []Point {
 
 // contains is the same as hullContains without
 // the checks for concave/non-concave
-func (P *Polygon) contains(p Point) bool {
+func (P *Polygon) contains(p *Point) bool {
 	if P.N == 0 {
 		// If there are no corners, p can't be inside
 		return false
@@ -377,11 +380,11 @@ func (P *Polygon) contains(p Point) bool {
 	// the intersections; a point inside the polygon
 	// intersects odd times
 	var intersections int
-	ln := NewLineSegment(p, NewPoint(max.X+1, p.Y))
+	ln := NewLineSegment(*p, *NewPoint(max.X+1, p.Y))
 	q := P.Corners[0]
 	for i := 0; i < P.N; i++ {
 		nextQ := q.N2
-		edge := NewLineSegment(q.Pos, nextQ.Pos)
+		edge := NewLineSegment(*q.Pos, *nextQ.Pos)
 		if intersection(ln, edge) < 0 {
 			intersections++
 		}

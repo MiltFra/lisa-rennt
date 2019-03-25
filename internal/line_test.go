@@ -1,4 +1,4 @@
-package main
+package internal
 
 import "testing"
 
@@ -65,6 +65,21 @@ func TestIsInCounterClockwiseAngle(t *testing.T) {
 		t.FailNow()
 	}
 	if ls.inCounterClockwiseAngle(p0, p1, p3) {
+		t.FailNow()
+	}
+}
+func TestChangesSide(t *testing.T) {
+	ls := NewLineSegment(*NewPoint(-1, -1), *NewPoint(1, 1))
+	if ls.changesSide(NewPoint(0, 0), NewPoint(-1, 0), NewPoint(0, 1)) {
+		t.FailNow()
+	}
+	if ls.changesSide(NewPoint(0, 0), NewPoint(0, 1), NewPoint(-1, 0)) {
+		t.FailNow()
+	}
+	if !ls.changesSide(NewPoint(0, 0), NewPoint(1, 0), NewPoint(0, 1)) {
+		t.FailNow()
+	}
+	if !ls.changesSide(NewPoint(0, 0), NewPoint(0, 1), NewPoint(1, 0)) {
 		t.FailNow()
 	}
 }

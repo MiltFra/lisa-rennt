@@ -1,32 +1,31 @@
-package main
+package internal
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestMakeClockwise(t *testing.T) {
-	trrn := NewTerrain("/home/miltfra/lisarennt5.txt")
-	for i := 0; i < trrn.PolCnt; i++ {
-		b1 := trrn.Plygns[i].isClockwise()
-		trrn.Plygns[i].Reverse()
-		b2 := trrn.Plygns[i].isClockwise()
-		trrn.Plygns[i].MakeClockwise()
-		b3 := trrn.Plygns[i].isClockwise()
-		if !b1 || b2 || !b3 {
-			t.FailNow()
-		}
+	p := NewPolygon()
+	p.AddCorners([]Point{Point{0, 0}, Point{1, 0}, Point{0, 1}})
+	p.MakeClockwise()
+	if !p.isClockwise() {
+		t.FailNow()
+	}
+	p.Reverse()
+	p.MakeClockwise()
+	if !p.isClockwise() {
+		t.FailNow()
 	}
 }
 
 func TestReverse(t *testing.T) {
-	trrn := NewTerrain("/home/miltfra/lisarennt5.txt")
-	for i := 0; i < trrn.PolCnt; i++ {
-		b1 := trrn.Plygns[i].isClockwise()
-		trrn.Plygns[i].Reverse()
-		b2 := trrn.Plygns[i].isClockwise()
-		trrn.Plygns[i].Reverse()
-		b3 := trrn.Plygns[i].isClockwise()
-		if !(b1 != b2 && b1 == b3) {
-			t.FailNow()
-		}
+	p := NewPolygon()
+	p.AddCorners([]Point{Point{0, 0}, Point{1, 0}, Point{0, 1}})
+	b1 := p.isClockwise()
+	p.Reverse()
+	b2 := p.isClockwise()
+	if b1 == b2 {
+		t.FailNow()
 	}
 }
 func TestHullContains(t *testing.T) {

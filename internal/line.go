@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"errors"
@@ -17,8 +17,8 @@ type Line struct {
 // boundaries
 type LineSegment struct {
 	L *Line
-	A Point
-	B Point
+	A *Point
+	B *Point
 }
 
 // ErrBadLineOrientation occurs, when it's
@@ -32,7 +32,7 @@ var ErrBadLineOrientation = errors.New(
 func NewLineSegment(A, B Point) *LineSegment {
 	// See https://de.wikipedia.org/wiki/Koordinatenform
 	L := &Line{A.Y - B.Y, B.X - A.X, B.X*A.Y - A.X*B.Y}
-	return &LineSegment{L, A, B}
+	return &LineSegment{L, &A, &B}
 }
 
 // GetY returns the corresponding y to a given x
@@ -55,8 +55,9 @@ func (L *Line) GetX(Y float64) (float64, error) {
 
 // GetMinMax returns the boundaries of the rectangle
 // the endpoints of the line shape
-func (LS *LineSegment) GetMinMax() (Point, Point) {
-	return sortPointCoordinates(LS.A, LS.B)
+func (LS *LineSegment) GetMinMax() (*Point, *Point) {
+	sortPointCoordinates(LS.A, LS.B)
+	return LS.A, LS.B
 }
 
 // RelationOf is true, when the given point is
@@ -64,7 +65,7 @@ func (LS *LineSegment) GetMinMax() (Point, Point) {
 // point. For the sake of simplicity above means left
 // of a vertical line (thus you can check wether
 // points are on the same side of the line)
-func (L *Line) RelationOf(P Point) int {
+func (L *Line) RelationOf(P *Point) int {
 	if L.B == 0 {
 		if P.X > L.C/L.A {
 			return 1 // Above
@@ -108,14 +109,13 @@ func intersection(L1, L2 *LineSegment) int {
 
 // sortPointCoordinates returns the given points in such a way
 // that no coordinate of P is bigger than its counterpart in Q
-func sortPointCoordinates(P, Q Point) (Point, Point) {
+func sortPointCoordinates(P, Q *Point) {
 	if P.X > Q.X {
 		P.X, Q.X = Q.X, P.X
 	}
 	if P.Y > Q.Y {
 		P.Y, Q.Y = Q.Y, P.Y
 	}
-	return P, Q
 }
 
 // IsConcave returns true if the angle at this
@@ -167,17 +167,17 @@ func (LS *LineSegment) ScaleTo(s float64) *LineSegment {
 	return LS
 }
 
-func (LS *LineSegment) inCounterClockwiseAngle(p0, p1, p2 Point) bool {
-	angle1, err := getAngle(p0, p1)
+func (LS *LineSegment) inCounterClockwiseAngle(p0, p1, p2 *Point) bool {
+	angle1, err := GetAngle(p0, p1)
 	if err != nil {
 		return false
 	}
-	angle2, err := getAngle(p0, p2)
+	angle2, err := GetAngle(p0, p2)
 	if err != nil {
 		return false
 	}
-	angleA, errA := getAngle(p0, LS.A)
-	angleB, errB := getAngle(p0, LS.B)
+	angleA, errA := GetAngle(p0, LS.A)
+	angleB, errB := GetAngle(p0, LS.B)
 	condA := angleA > angle1 && angleA < angle2
 	condB := angleB > angle1 && angleB < angle2
 	if errA == nil && errB == nil {
@@ -191,20 +191,20 @@ func (LS *LineSegment) inCounterClockwiseAngle(p0, p1, p2 Point) bool {
 	return false
 }
 
-func (LS *LineSegment) changesSide(p0, p1, p2 Point) bool {
-	angleA, err := getAngle(p0, LS.A)
+func (LS *LineSegment) changesSide(p0, p1, p2 *Point) bool {
+	angleA, err := GetAngle(p0, LS.A)
 	if err != nil {
 		return false
 	}
-	angleB, err := getAngle(p0, LS.B)
+	angleB, err := GetAngle(p0, LS.B)
 	if err != nil {
 		return false
 	}
-	angle1, err := getAngle(p0, p1)
+	angle1, err := GetAngle(p0, p1)
 	if err != nil {
 		return false
 	}
-	angle2, err := getAngle(p0, p2)
+	angle2, err := GetAngle(p0, p2)
 	if err != nil {
 		return false
 	}
