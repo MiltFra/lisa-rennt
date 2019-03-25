@@ -48,6 +48,7 @@ func (g *Graph) Shortest() []int {
 		}
 	}
 	g.path = g.toPath(part)
+	g.d = newDrawer(g)
 	return g.path
 }
 

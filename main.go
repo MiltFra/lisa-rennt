@@ -30,9 +30,6 @@ func draw(w http.ResponseWriter, req *http.Request) {
 	g.Shortest()
 	w.Header().Set("Content-Type", "image/svg+xml")
 	canv := svg.New(w)
-	g.DrawInit(canv)
-	g.DrawPossible(canv)
-	g.DrawPath(canv)
-	g.DrawHome(canv)
+	g.DrawAll(canv)
 	canv.End()
 }
