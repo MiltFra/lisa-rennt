@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/miltfra/lisa-rennt/internal/graph"
@@ -11,7 +12,8 @@ import (
 )
 
 func main() {
-	http.Handle("/", http.HandlerFunc(draw))
+	http.Handle("/data/", http.HandlerFunc(draw))
+	http.Handle("/", http.HandlerFunc(handleFile))
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
@@ -30,6 +32,19 @@ func draw(w http.ResponseWriter, req *http.Request) {
 	g.Shortest()
 	w.Header().Set("Content-Type", "image/svg+xml")
 	canv := svg.New(w)
-	g.DrawAll(canv)
+	switch strings.Split(req.URL.Path, "/")[2] {
+	case "graph":
+		g.DrawGraph(canv)
+	case "path":
+		g.DrawPath(canv)
+	case "terrain":
+		g.DrawObstacles(canv)
+	default:
+		g.DrawAll(canv)
+	}
 	canv.End()
+}
+
+func handleFile(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "public/"+r.URL.Path[1:])
 }

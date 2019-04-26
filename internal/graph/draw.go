@@ -71,7 +71,7 @@ func (d *drawer) DrawObstacles(canv *svg.SVG) {
 		x := make([]int, plygn.N)
 		y := make([]int, plygn.N)
 		for i, c := range plygn.Corners {
-			x[i], y[i] = d.Translate(c.Pos.X, c.Pos.Y)
+			x[i], y[i] = d.Translate(c.X, c.Y)
 		}
 		canv.Polygon(x, y, formatObstacle)
 	}

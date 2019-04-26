@@ -8,17 +8,14 @@ import (
 // A Line represents a line in the 2d-Plane:
 // A * x + B * y = C
 type Line struct {
-	A float64
-	B float64
-	C float64
+	A, B, C float64
 }
 
 // A LineSegment is a part of a line in certain
 // boundaries
 type LineSegment struct {
-	L *Line
-	A *Point
-	B *Point
+	L    *Line
+	A, B *Point
 }
 
 // ErrBadLineOrientation occurs, when it's
@@ -122,9 +119,9 @@ func sortPointCoordinates(P, Q *Point) {
 // corner is greater than 180°
 // See https://bit.ly/2xm22oj
 func (crnr *Corner) IsConcave() bool {
-	a := crnr.N1.Pos
-	b := crnr.Pos
-	c := crnr.N2.Pos
+	a := crnr.N1.Point
+	b := crnr.Point
+	c := crnr.N2.Point
 	return (b.X-a.X)*(c.Y-b.Y)-(b.Y-a.Y)*(c.X-b.X) < 0
 }
 

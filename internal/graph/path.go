@@ -100,7 +100,8 @@ func (g *Graph) getFinals() []bool {
 const velB = 30 / 3.6
 const velL = 15 / 3.6
 
-var ry = math.Sqrt(math.Pow(velB/velL, 2) - 1)
+//var ry = math.Sqrt(math.Pow(velB/velL, 2) - 1)
+var ry = velL / math.Sqrt(velB*velB-velL*velL)
 
 // maxDelta returns the time delta lisa would have when
 // travelling from a given point in the optimal route

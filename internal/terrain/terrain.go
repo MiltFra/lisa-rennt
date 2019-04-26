@@ -3,7 +3,6 @@ package terrain
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"strings"
 
@@ -14,12 +13,9 @@ import (
 // Terrain describes a certain instance of the
 // Lisa Rennt problem
 type Terrain struct {
-	velBus float64
-	velLis float64
 	PolCnt int
 	Plygns []*internal.Polygon
 	Start  *internal.Point
-	TanA   float64
 }
 
 // New returns a Terrain instance read from a file
@@ -43,11 +39,7 @@ func New(path string) *Terrain {
 	scanner.Scan()
 	h := strings.Split(scanner.Text(), " ")
 	home := internal.NewPoint(tools.Stof64(h[0]), tools.Stof64(h[1]))
-	velB := 30 / 3.6
-	velL := 15 / 3.6
-	return &Terrain{
-		velB, velL, polCnt, plygns, home,
-		math.Sqrt((math.Pow(velB, 2) / math.Pow(velL, 2)) - 1)}
+	return &Terrain{polCnt, plygns, home}
 }
 
 // GetAccessiblePoints returns a slice of Points which

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<div>
+    <script language="JavaScript">
+        function doPage() {
+            var objTag = document.getElementById("contentarea");
+            var selection = document.getElementById("nav")
+            if (objTag != null) {
+                objTag.setAttribute('data', selection.value);
+            }
+        }
+    </script>
+    </head>
+
+    <body>
+        <form name="datachanger" action="" method="POST">
+            <p>
+                <select name="nav" id="nav">
+                    <option value="">Ansicht wechseln...</option>
+                    <option value="data/terrain">Gelände</option>
+                    <option value="data/graph">Graph</option>
+                    <option value="data/path">Pfad</option>
+                    <option value="data/all">Alles</option>
+                </select>
+                <input type="button" value="Go" onclick="doPage();" /></p>
+        </form>
+
+</div>
+<div>
+    <object id="contentarea" type="image/svg+xml" data="data">
+        Your browser does not support iframe.
+    </object>
+</div>
+
+</html>

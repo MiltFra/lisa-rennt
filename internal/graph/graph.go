@@ -31,8 +31,8 @@ func New(t *terrain.Terrain) *Graph {
 	for _, plygn := range t.Plygns {
 		for _, c := range plygn.Corners {
 			if !c.IsConcave() {
-				indx2pt[count] = c.Pos
-				pt2indx[c.Pos] = count
+				indx2pt[count] = c.Point
+				pt2indx[c.Point] = count
 				count++
 			}
 		}
@@ -107,6 +107,35 @@ func (g *Graph) DrawAll(svg *svg.SVG) {
 	g.d.drawPossible(svg)
 	g.d.DrawObstacles(svg)
 	g.d.DrawPath(svg)
+	g.d.DrawHome(svg)
+	g.d.DrawStreet(svg)
+}
+
+// DrawGraph executes all draw functions on the SVG in the right
+// order.
+func (g *Graph) DrawGraph(svg *svg.SVG) {
+	g.d.DrawInit(svg)
+	g.d.drawPossible(svg)
+	g.d.DrawObstacles(svg)
+	g.d.DrawHome(svg)
+	g.d.DrawStreet(svg)
+}
+
+// DrawPath executes all draw functions on the SVG in the right
+// order.
+func (g *Graph) DrawPath(svg *svg.SVG) {
+	g.d.DrawInit(svg)
+	g.d.DrawObstacles(svg)
+	g.d.DrawPath(svg)
+	g.d.DrawHome(svg)
+	g.d.DrawStreet(svg)
+}
+
+// DrawObstacles executes all draw functions on the SVG in the right
+// order.
+func (g *Graph) DrawObstacles(svg *svg.SVG) {
+	g.d.DrawInit(svg)
+	g.d.DrawObstacles(svg)
 	g.d.DrawHome(svg)
 	g.d.DrawStreet(svg)
 }
