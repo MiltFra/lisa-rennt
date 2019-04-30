@@ -133,9 +133,6 @@ func (LS *LineSegment) passes(min, max Point) bool {
 		min.Y > lsMax.Y || lsMin.Y > max.Y {
 		return false
 	}
-	//if LS.A.IsInside(min, max) || LS.B.IsInside(min, max) {
-	//	return true
-	//}
 	l1 := NewLineSegment(min, Point{min.X, max.Y})
 	if intersection(LS, l1) > 0 {
 		return true
@@ -164,6 +161,7 @@ func (LS *LineSegment) ScaleTo(s float64) *LineSegment {
 	return LS
 }
 
+// inCounterClockwiseAngle returns true if
 func (LS *LineSegment) inCounterClockwiseAngle(p0, p1, p2 *Point) bool {
 	angle1, err := GetAngle(p0, p1)
 	if err != nil {

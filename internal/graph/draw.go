@@ -41,11 +41,11 @@ func newDrawer(g *Graph) *drawer {
 // given SVG. Nothing else is added.
 func (d *drawer) drawPossible(canv *svg.SVG) {
 	// For every starting node
-	for i := 0; i < d.g.N; i++ {
+	for i := uint16(0); int(i) < d.g.N; i++ {
 		// For every target node
-		for j := i + 1; j < d.g.N; j++ {
+		for j := i + 1; int(j) < d.g.N; j++ {
 			// If this edge exists
-			if d.g.Mtrx[i*d.g.N+j] != -1 {
+			if d.g.Mtrx[int(i)*d.g.N+int(j)] != -1 {
 				// Draw the line
 				p0 := d.g.indx2pt[i]
 				p1 := d.g.indx2pt[j]

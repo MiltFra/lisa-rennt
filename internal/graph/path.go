@@ -11,10 +11,10 @@ import (
 // starting at 0. It also contains times needed
 // to follow the path with velL.
 type partPath struct {
-	bck    []int
+	bck    []uint16
 	passed float64
 	max    float64
-	last   int
+	last   uint16
 }
 
 const segLen = 10000
@@ -30,10 +30,10 @@ type prioQ struct {
 // walking towards the road in the optimal angle. This
 // path is the optimal solution when competing against
 // the bus.
-func (g *Graph) Shortest() []int {
-	bck := make([]int, g.N)
+func (g *Graph) Shortest() []uint16 {
+	bck := make([]uint16, g.N)
 	for i := range bck {
-		bck[i] = -1
+		bck[i] = 0xffff
 	}
 	start := &partPath{bck, 0, g.maxDelta(g.indx2pt[0], 0), 0}
 	q := &prioQ{make([]*partPath, segLen), 0, g.getFinals()}
@@ -42,42 +42,45 @@ func (g *Graph) Shortest() []int {
 	var part *partPath
 	for part = q.Get(); !q.final[part.last]; part = q.Get() {
 		for i = 0; i < g.N; i++ {
-			if part.bck[i] == -1 && g.Mtrx[part.last*g.N+i] >= 0 {
+			if part.bck[i] == 0xffff && g.Mtrx[int(part.last)*g.N+i] >= 0 {
 				q.Put(g.extend(part, i))
 			}
 		}
 	}
 	g.path = g.toPath(part)
 	g.d = newDrawer(g)
+	g.PrintInformation()
 	return g.path
 }
 
-func (g *Graph) toPath(p *partPath) []int {
-	rev := make([]int, 0, g.N)
+func (g *Graph) toPath(p *partPath) []uint16 {
+	rev := make([]uint16, 0, g.N)
 	current := p.last
+	count := 0
 	for {
 		rev = append(rev, current)
-		if p.bck[current] == -1 || len(rev) == g.N {
+		count++
+		if current == 0 || p.bck[current] == 0xffff || len(rev) == g.N {
 			break
 		} else {
 			current = p.bck[current]
 		}
 	}
-	res := make([]int, len(rev))
-	for i := 0; i < len(rev); i++ {
-		res[i] = rev[len(rev)-i-1]
+	res := make([]uint16, count)
+	for i := 0; i < count; i++ {
+		res[i] = rev[count-i-1]
 	}
 	return res
 }
 
 func (g *Graph) extend(p *partPath, i int) *partPath {
 	newP := &partPath{}
-	newP.bck = make([]int, g.N)
+	newP.bck = make([]uint16, g.N)
 	copy(newP.bck, p.bck)
 	newP.bck[i] = p.last
-	newP.passed = p.passed + g.Mtrx[p.last*g.N+i]/velL
-	newP.max = g.maxDelta(g.indx2pt[i], newP.passed)
-	newP.last = i
+	newP.passed = p.passed + g.Mtrx[int(p.last)*g.N+i]/velL
+	newP.max = g.maxDelta(g.indx2pt[uint16(i)], newP.passed)
+	newP.last = uint16(i)
 	return newP
 }
 
@@ -87,7 +90,7 @@ func (g *Graph) getFinals() []bool {
 	var current *internal.Point
 	var ls *internal.LineSegment
 	for i := 0; i < g.N; i++ {
-		current = g.indx2pt[i]
+		current = g.indx2pt[uint16(i)]
 		optimal = internal.Point{0, ry*current.X + current.Y}
 		ls = internal.NewLineSegment(optimal, *current)
 		if !HasIntersections(g.Trrn, ls) {

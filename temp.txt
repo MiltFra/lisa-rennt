@@ -1,0 +1,12 @@
+Lisa...
+...muss 7:28:7 Uhr losgehen...
+...wird den Bus 7:30:11 Uhr treffen.
+...wird den Bus 98.15 Meter von der Haltestelle entfernt treffen.
+...muss 516.31 Meter laufen und benötigt 123.91 Sekunden.
+...muss folgende Wegpunkte passieren:
+
+Polygon: L, Punkt: [x: 633.00, y: 189.00]
+Polygon: P1, Punkt: [x: 505.00, y: 213.00]
+Polygon: P1, Punkt: [x: 390.00, y: 260.00]
+Polygon: P3, Punkt: [x: 170.00, y: 402.00]
+Polygon: S, Punkt: [x: 0.00, y: 98.15]

@@ -48,10 +48,12 @@ func NewPolygonFromArray(corners []*Corner) *Polygon {
 // that doesn't add to it's shape; that means every corner
 // that has an 180 degree angle.
 func (P *Polygon) removeFlatCorners() {
+	removed := 0
 	for i, c := range P.Corners {
 		ls := NewLineSegment(*c.N1.Point, *c.N2.Point)
 		if ls.L.RelationOf(c.Point) == 0 {
-			P.remove(i)
+			P.remove(i - removed)
+			removed++
 		}
 	}
 }
@@ -68,8 +70,10 @@ func (P *Polygon) remove(indx int) {
 		if i == indx {
 			i++
 		}
-		newCorners[j] = P.Corners[i]
-		j++
+		if j < len(newCorners) && i < P.N {
+			newCorners[j] = P.Corners[i]
+			j++
+		}
 	}
 	P.Corners = newCorners
 	P.N--
@@ -233,13 +237,7 @@ func (P *Polygon) HullContains(p *Point) bool {
 // DoesIntersect returns true if the given line segment
 // intersects the polygon
 func (P *Polygon) DoesIntersect(ls *LineSegment) bool {
-	// For the following inspection to work we need to
-	// make sure that neither of the points is in the
-	// polygon
-	// TODO: Find good conditioning to solve these easy cases early
-	//if P.contains(ls.A) || P.contains(ls.B) {
-	//	return true
-	//}
+	// Find out wether each corner is above, below or on the line
 	relations := make([]int, P.N)
 	for i := 0; i < P.N; i++ {
 		relations[i] = ls.L.RelationOf(P.Corners[i].Point)
